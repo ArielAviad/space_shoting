@@ -67,7 +67,11 @@ function create() {
     //  The hero!
     player = game.add.sprite(400, 500, 'ship');
     player.anchor.setTo(0.5, 0.5);
+    console.log(player);
+    //enabale physics for player.
     game.physics.enable(player, Phaser.Physics.ARCADE);
+    //unable to go aout of the screen.
+    player.body.collideWorldBounds = true;
 
     //  The baddies!
     aliens = game.add.group();
@@ -284,7 +288,7 @@ function playerEnemyColide(player, alien){
     if(lives.countLiving() < 1){
       gameOver();
     }else if(aliens.countLiving() == 0){
-      winGame()
+      winGame();
     }
 
 }
