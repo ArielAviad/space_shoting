@@ -154,13 +154,14 @@ function update() {
         //  Reset the player, then check for movement keys
         player.body.velocity.setTo(0, 0);
 
-        if (cursors.left.isDown)
-        {
+        if (cursors.left.isDown){
             player.body.velocity.x = -200;
-        }
-        else if (cursors.right.isDown)
-        {
+        }else if (cursors.right.isDown){
             player.body.velocity.x = 200;
+        }else if (cursors.up.isDown){
+          player.body.velocity.y = -200;
+        }else if (cursors.down.isDown){
+          player.body.velocity.y = 200;
         }
 
         //  Firing?
