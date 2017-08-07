@@ -15,7 +15,7 @@ function preload() {
     game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
     game.load.image('ship', 'assets/player.png');
     game.load.spritesheet('kaboom', 'assets/explode.png', 128, 128);
-    game.load.image('starfield', 'assets/starfield.jpg');
+    game.load.image('starfield', 'assets/starfield.png');
 }
 
 var player;
@@ -27,6 +27,8 @@ var fireButton;
 var explosions;
 var starfield;
 var score = 0;
+var alienKillPoints = 20;
+var winAdd = 1000;
 var scoreString = '';
 var scoreText;
 var lives;
@@ -178,6 +180,7 @@ function update() {
         //  Run collision
         game.physics.arcade.overlap(bullets, aliens, collisionHandler, null, this);
         game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+        game.physics.arcade.overlap(player,aliens, playerEnemyColide, null, this);
     }
 
 }
@@ -198,27 +201,37 @@ function collisionHandler (bullet, alien) {
     alien.kill();
 
     //  Increase the score
-    score += 20;
-    scoreText.text = scoreString + score;
-
+    increaseScore();
     //  And create an explosion :)
-    var explosion = explosions.getFirstExists(false);
-    explosion.reset(alien.body.x, alien.body.y);
-    explosion.play('kaboom', 30, false, true);
+    createExplosion(alien);
 
-    if (aliens.countLiving() == 0)
-    {
-        score += 1000;
-        scoreText.text = scoreString + score;
-
-        enemyBullets.callAll('kill',this);
-        stateText.text = " You Won, \n Click to restart";
-        stateText.visible = true;
-
-        //the "click to restart" handler
-        game.input.onTap.addOnce(restart,this);
+    if (aliens.countLiving() == 0){
+      winGame();
     }
+}
 
+//increase the score
+function increaseScore(){
+  score += alienKillPoints;
+  scoreText.text = scoreString + score;
+}
+//create explosion :)
+function createExplosion(_sprint){
+  var explosion = explosions.getFirstExists(false);
+  explosion.reset(_sprint.body.x, _sprint.body.y);
+  explosion.play('kaboom', 30, false, true);
+}
+
+function winGame(){
+  score += winAdd;
+  scoreText.text = scoreString + score;
+
+  enemyBullets.callAll('kill',this);
+  stateText.text = " You Won, \n Click to restart";
+  stateText.visible = true;
+
+  //the "click to restart" handler
+  game.input.onTap.addOnce(restart,this);
 }
 
 function enemyHitsPlayer (player,bullet) {
@@ -233,21 +246,45 @@ function enemyHitsPlayer (player,bullet) {
     }
 
     //  And create an explosion :)
-    var explosion = explosions.getFirstExists(false);
-    explosion.reset(player.body.x, player.body.y);
-    explosion.play('kaboom', 30, false, true);
-
+    createExplosion(player);
     // When the player dies
-    if (lives.countLiving() < 1)
-    {
-        player.kill();
-        enemyBullets.callAll('kill');
+    if (lives.countLiving() < 1){
+      gameOver();
+    }
 
-        stateText.text=" GAME OVER \n Click to restart";
-        stateText.visible = true;
+}
 
-        //the "click to restart" handler
-        game.input.onTap.addOnce(restart,this);
+function gameOver(){
+  player.kill();
+  enemyBullets.callAll('kill');
+
+  stateText.text=" GAME OVER \n Click to restart";
+  stateText.visible = true;
+
+  //the "click to restart" handler
+  game.input.onTap.addOnce(restart,this);
+}
+
+function playerEnemyColide(player, alien){
+    //both dies
+    alien.kill();
+
+    //Increase the score
+    increaseScore();
+
+    //get the first live pictuer.
+    live = lives.getFirstAlive();
+    if(live){
+      live.kill();
+    }
+
+    //create explosion
+    createExplosion(alien);
+    //if player dies
+    if(lives.countLiving() < 1){
+      gameOver();
+    }else if(aliens.countLiving() == 0){
+      winGame()
     }
 
 }
